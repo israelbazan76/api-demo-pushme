@@ -2,7 +2,7 @@ package com.bazan.demopushme.controller;
 
 import com.bazan.demopushme.model.PushNotificationRequest;
 import com.bazan.demopushme.model.TokenRegisterRequest;
-import com.bazan.demopushme.service.FCMService;
+import com.bazan.demopushme.service.FcmRestService;
 import com.bazan.demopushme.service.TokenService;
 
 import java.util.Date;
@@ -13,24 +13,27 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class NotificationController {
 
-    private final FCMService fcmService;
+    private final FcmRestService fcmRestService;
     private final TokenService tokenService;
 
-    public NotificationController(FCMService fcmService, TokenService tokenService) {
-        this.fcmService = fcmService;
+    public NotificationController(FcmRestService fcmRestService, TokenService tokenService) {
+        this.fcmRestService = fcmRestService;
         this.tokenService = tokenService;
     }
 
     @PostMapping("/token/register")
     public String registerToken(@RequestBody TokenRegisterRequest request) {
         tokenService.registerOrUpdateToken(request);
-        return "Token guardado correctamente";
+        return "Twwwwwwoken guardado correctamente";
     }
 
     @PostMapping("/notification/send")
-    public String sendNotification(@RequestBody PushNotificationRequest request) throws Exception {
-        fcmService.sendNotification(request);
-        return "Notificación enviada";
+    public String sendNotification(@RequestBody PushNotificationRequest request) {
+        try {
+            return fcmRestService.sendPushNotification(request.getTargetToken(), request.getTitle(), request.getBody());
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
     }
 
     @GetMapping("/test")

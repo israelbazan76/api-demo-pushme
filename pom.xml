@@ -61,17 +61,36 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 		<!-- Google Auth -->
-    <dependency>
-        <groupId>com.google.auth</groupId>
-        <artifactId>google-auth-library-oauth2-http</artifactId>
-        <version>1.23.0</version>
-    </dependency>
+		<dependency>
+			<groupId>com.google.auth</groupId>
+			<artifactId>google-auth-library-oauth2-http</artifactId>
+			<version>1.23.0</version>
+		</dependency>
 
-    <!-- JSON -->
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-    </dependency>
+		<!-- JSON -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.30</version> <!-- Puedes usar la versión más reciente -->
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+
+		<!-- <dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.10.1</version> 
+		</dependency> -->
 	</dependencies>
 
 	<build>
