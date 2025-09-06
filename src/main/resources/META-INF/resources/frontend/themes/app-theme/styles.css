@@ -1,0 +1,59 @@
+/*
+Este es el archivo principal de estilos para la aplicación Vaadin.
+Define los estilos de los componentes en la clase NotificationView.
+*/
+
+/* Estilos para el layout principal */
+.main-layout {
+background-color: #f8f8f8;
+font-family: Arial, sans-serif;
+padding: 2rem;
+border-radius: 10px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el título principal */
+.page-title {
+color: #4a4a4a;
+text-align: center;
+margin-bottom: 1.5rem;
+}
+
+/* Estilos para el contenedor del formulario */
+.form-container {
+width: 100%;
+max-width: 500px;
+background-color: #ffffff;
+padding: 2rem;
+border-radius: 8px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para el botón de envío */
+.send-button {
+background-color: #4285f4;
+color: white;
+font-weight: bold;
+border-radius: 5px;
+padding: 0.75rem 1.5rem;
+cursor: pointer;
+transition: background-color 0.2s ease;
+}
+
+.send-button:hover {
+background-color: #357ae8;
+}
+
+/* Estilos para la cuadrícula de resultados */
+.response-grid {
+margin-top: 2rem;
+border-radius: 8px;
+overflow: hidden;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilo para las cabeceras de la cuadrícula */
+vaadin-grid-cell-content[part="header-cell"] {
+background-color: #ececec;
+font-weight: bold;
+}

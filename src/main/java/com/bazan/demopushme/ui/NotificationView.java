@@ -4,9 +4,11 @@ import com.bazan.demopushme.dto.PushNotificationResponse;
 import com.bazan.demopushme.repository.DeviceTokenRepository;
 import com.bazan.demopushme.service.FcmRestService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -34,6 +36,7 @@ public class NotificationView extends VerticalLayout {
     private final TextField bodyField = new TextField("Cuerpo del Mensaje");
     private final Button sendButton = new Button("Enviar a Todos");
     private final Grid<PushNotificationResponse> responseGrid = new Grid<>(PushNotificationResponse.class);
+    private final Dialog loadingDialog = new Dialog();
 
     // Constructor que recibe las dependencias inyectadas por Spring.
     @Autowired
@@ -49,25 +52,37 @@ public class NotificationView extends VerticalLayout {
      */
     private void setupUI() {
         // Título de la vista
-        add(new H1("Enviar Notificaciones Push"));
+         H1 pageTitle = new H1("Enviar Notificaciones Push");
+        pageTitle.addClassName("page-title");
+        add(pageTitle);
 
         // Diseño del formulario con los campos de texto
         FormLayout formLayout = new FormLayout();
+        formLayout.addClassName("form-container");
         formLayout.add(titleField, bodyField);
         titleField.setRequired(true);
         bodyField.setRequired(true);
 
         // Añadir el formulario y el botón a la vista principal
+        sendButton.addClassName("send-button");
         add(formLayout, sendButton);
 
         // Configurar la cuadrícula (Grid) para mostrar los resultados.
           // Configurar la cuadrícula (Grid) para mostrar los resultados.
+        responseGrid.addClassName("response-grid");
         responseGrid.setColumns("success", "messageId", "error", "retries");
         add(responseGrid);
 
         // Estilos para centrar y dar espaciado
+        addClassName("main-layout");
         setAlignItems(Alignment.CENTER);
         setSpacing(true);
+
+        // Configurar el diálogo de carga
+        loadingDialog.setModal(true);
+        loadingDialog.setCloseOnEsc(false);
+        loadingDialog.setCloseOnOutsideClick(false);
+        loadingDialog.add(new Span("Enviando notificaciones..."));
     }
 
     /**
@@ -80,6 +95,9 @@ public class NotificationView extends VerticalLayout {
                 Notification.show("Por favor, complete todos los campos.", 3000, Notification.Position.MIDDLE);
                 return;
             }
+            // Deshabilitar el botón para evitar multiples clicks y mostrar el diálogo de carga
+            sendButton.setEnabled(false);
+            loadingDialog.open();
 
             // Llamar al servicio para enviar las notificaciones.
             String title = titleField.getValue();
@@ -94,12 +112,16 @@ public class NotificationView extends VerticalLayout {
                     getUI().ifPresent(ui -> ui.access(() -> {
                         responseGrid.setItems(responses);
                         Notification.show("Notificaciones enviadas. Revise los resultados en la tabla.", 3000, Notification.Position.MIDDLE);
+                        sendButton.setEnabled(true);
+                        loadingDialog.close();
                     }));
                 } catch (Exception e) {
                     // Manejar cualquier error inesperado
                     getUI().ifPresent(ui -> ui.access(() -> {
                         Notification.show("Ocurrió un error al enviar las notificaciones: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
                         System.err.println("Error en el servicio: " + e.getMessage());
+                        sendButton.setEnabled(true);
+                        loadingDialog.close();
                     }));
                 }
             }).start();
