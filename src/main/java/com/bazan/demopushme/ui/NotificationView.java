@@ -1,21 +1,25 @@
 package com.bazan.demopushme.ui;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.bazan.demopushme.dto.PushNotificationResponse;
 import com.bazan.demopushme.repository.DeviceTokenRepository;
 import com.bazan.demopushme.service.FcmRestService;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.Route;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 /**
  * Vista de Vaadin para enviar notificaciones push a todos los dispositivos.
@@ -35,8 +39,14 @@ public class NotificationView extends VerticalLayout {
     private final TextField titleField = new TextField("Título de la Notificación");
     private final TextField bodyField = new TextField("Cuerpo del Mensaje");
     private final Button sendButton = new Button("Enviar a Todos");
+    private final Button refreshButton = new Button("Actualizar Grilla");
     private final Grid<PushNotificationResponse> responseGrid = new Grid<>(PushNotificationResponse.class);
-    private final Dialog loadingDialog = new Dialog();
+    // Proveedor de datos reactivo para la grilla
+    private final ListDataProvider<PushNotificationResponse> dataProvider = new ListDataProvider<>(new ArrayList<>());
+
+
+    // Pool de hilos para ejecutar tareas en segundo plano. Esto es más robusto que usar new Thread().
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     // Constructor que recibe las dependencias inyectadas por Spring.
     @Autowired
@@ -52,7 +62,7 @@ public class NotificationView extends VerticalLayout {
      */
     private void setupUI() {
         // Título de la vista
-         H1 pageTitle = new H1("Enviar Notificaciones Push");
+        H1 pageTitle = new H1("Enviar Notificaciones Push");
         pageTitle.addClassName("page-title");
         add(pageTitle);
 
@@ -63,26 +73,24 @@ public class NotificationView extends VerticalLayout {
         titleField.setRequired(true);
         bodyField.setRequired(true);
 
-        // Añadir el formulario y el botón a la vista principal
+        // Añadir el formulario, el botón y el indicador a la vista principal
         sendButton.addClassName("send-button");
-        add(formLayout, sendButton);
+        add(formLayout, sendButton, refreshButton);
 
         // Configurar la cuadrícula (Grid) para mostrar los resultados.
-          // Configurar la cuadrícula (Grid) para mostrar los resultados.
         responseGrid.addClassName("response-grid");
         responseGrid.setColumns("success", "messageId", "error", "retries");
+        responseGrid.addColumn(response -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            return response.getTimestamp().format(formatter);
+        }).setHeader("Fecha y Hora").setKey("timestamp");
+        responseGrid.setItems(dataProvider);
         add(responseGrid);
 
         // Estilos para centrar y dar espaciado
         addClassName("main-layout");
         setAlignItems(Alignment.CENTER);
         setSpacing(true);
-
-        // Configurar el diálogo de carga
-        loadingDialog.setModal(true);
-        loadingDialog.setCloseOnEsc(false);
-        loadingDialog.setCloseOnOutsideClick(false);
-        loadingDialog.add(new Span("Enviando notificaciones..."));
     }
 
     /**
@@ -95,37 +103,46 @@ public class NotificationView extends VerticalLayout {
                 Notification.show("Por favor, complete todos los campos.", 3000, Notification.Position.MIDDLE);
                 return;
             }
-            // Deshabilitar el botón para evitar multiples clicks y mostrar el diálogo de carga
+
+            // Cambiar texto del botón y deshabilitarlo
+            sendButton.setText("Enviando...");
             sendButton.setEnabled(false);
-            loadingDialog.open();
 
-            // Llamar al servicio para enviar las notificaciones.
-            String title = titleField.getValue();
-            String body = bodyField.getValue();
-
-            // Usar un hilo separado para la llamada al servicio para evitar bloquear la UI
-            // Esto es crucial para operaciones de red que pueden tardar.
-            new Thread(() -> {
+            // Enviar la tarea al pool de hilos para su ejecución.
+            executorService.submit(() -> {
+                System.out.println("Iniciando el envío de notificaciones...");
+                List<PushNotificationResponse> responses = null;
+                Exception error = null;
                 try {
-                    List<PushNotificationResponse> responses = pushNotificationService.sendPushNotificationsToAll(title, body);
-                    // Actualizar la UI con los resultados.
-                    getUI().ifPresent(ui -> ui.access(() -> {
-                        responseGrid.setItems(responses);
-                        Notification.show("Notificaciones enviadas. Revise los resultados en la tabla.", 3000, Notification.Position.MIDDLE);
-                        sendButton.setEnabled(true);
-                        loadingDialog.close();
-                    }));
+                    String title = titleField.getValue();
+                    String body = bodyField.getValue();
+                    responses = pushNotificationService.sendPushNotificationsToAll(title, body);
+                    System.out.println("Llamada al servicio de notificaciones exitosa.");
                 } catch (Exception e) {
-                    // Manejar cualquier error inesperado
+                    System.err.println("Ocurrió un error en el servicio: " + e.getMessage());
+                    error = e;
+                } finally {
+                    System.out.println("El bloque 'finally' se ha ejecutado. Restaurando la UI...");
+                    // Restaurar el texto y el estado del botón, y ocultar el indicador de carga
+                    List<PushNotificationResponse> finalResponses = responses;
+                    Exception finalError = error;
                     getUI().ifPresent(ui -> ui.access(() -> {
-                        Notification.show("Ocurrió un error al enviar las notificaciones: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
-                        System.err.println("Error en el servicio: " + e.getMessage());
+                        sendButton.setText("Enviar a Todos");
                         sendButton.setEnabled(true);
-                        loadingDialog.close();
+                        if (finalError == null) {
+                            dataProvider.getItems().addAll(finalResponses);
+                            Notification.show("Notificaciones enviadas. Revise los resultados en la tabla.", 3000, Notification.Position.MIDDLE);
+                        } else {
+                            dataProvider.getItems().addAll(new ArrayList<>());
+                            Notification.show("Ocurrió un error al enviar las notificaciones: " + finalError.getMessage(), 5000, Notification.Position.MIDDLE);
+                        }
                     }));
                 }
-            }).start();
+            });
+        });
+        refreshButton.addClickListener(event -> {
+            dataProvider.refreshAll();
+            Notification.show("Grilla actualizada manualmente.", 3000, Notification.Position.MIDDLE);
         });
     }
 }
-

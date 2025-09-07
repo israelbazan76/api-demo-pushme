@@ -7,6 +7,7 @@ import com.bazan.demopushme.service.FcmRestService;
 import com.bazan.demopushme.service.TokenService;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class NotificationController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new PushNotificationResponse(false, null, "Error enviando notificación", 0);
+        return new PushNotificationResponse(false, null, "Error enviando notificación", 0, LocalDateTime.now());
     }
 
     @PostMapping("/notification/sendToAll")

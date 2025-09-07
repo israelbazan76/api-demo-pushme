@@ -13,6 +13,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -68,7 +69,7 @@ public class FcmRestService {
                 // Verificar la respuesta
                 if (response.getStatusCode().is2xxSuccessful()) {
                     // Envío exitoso, devolver respuesta de éxito.
-                    return new PushNotificationResponse(true, response.getBody(), null, i);
+                    return new PushNotificationResponse(true, response.getBody(), null, i, LocalDateTime.now());
                 } else {
                     // La solicitud no fue exitosa, lanzar excepción para reintentar.
                     throw new RuntimeException("FCM error: " + response.getStatusCode());
@@ -84,17 +85,17 @@ public class FcmRestService {
                         Thread.sleep(RETRY_DELAY_MS);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
-                        return new PushNotificationResponse(false, null, "Proceso de reintentos interrumpido.", i);
+                        return new PushNotificationResponse(false, null, "Proceso de reintentos interrumpido.", i, LocalDateTime.now());
                     }
                 } else {
                     // Todos los reintentos han fallado, devolver respuesta de error.
-                    return new PushNotificationResponse(false, null, "Fallaron todos los reintentos. Error: " + e.getMessage(), i);
+                    return new PushNotificationResponse(false, null, "Fallaron todos los reintentos. Error: " + e.getMessage(), i, LocalDateTime.now());
                 }
             }
         }
         // Este punto solo se alcanza si el bucle termina sin éxito, lo cual
         // es manejado por el return dentro del último 'else' del catch.
-        return new PushNotificationResponse(false, null, "Error desconocido después de reintentos.", MAX_RETRIES);
+        return new PushNotificationResponse(false, null, "Error desconocido después de reintentos.", MAX_RETRIES, LocalDateTime.now());
     }
 
     /**
@@ -106,20 +107,24 @@ public class FcmRestService {
      * @return Una lista de PushNotificationResponse, una por cada token.
      */
     public List<PushNotificationResponse> sendPushNotificationsToAll(String title, String body) {
+         System.out.println("sendPushNotificationsToAll(title:" + title + ",body: " + body);
         // Obtener todos los tokens del repositorio.
         List<DeviceToken> deviceTokens = deviceTokenRepository.findAll();
         List<PushNotificationResponse> results = new ArrayList<>();
 
         for (DeviceToken deviceToken : deviceTokens) {
             try {
+                System.out.println("try-inicio sendPushNotificationsToAll for token: " + deviceToken.getFirebaseToken());
                 // Reutiliza el método existente para enviar la notificación a un solo token.
                 PushNotificationResponse response = sendPushNotification(deviceToken.getFirebaseToken(), title, body);
+                System.out.println("try-fin sendPushNotificationsToAll ,response.status: " + response.isSuccess());
+                 // Añadir la respuesta a la lista de resultados.
                 results.add(response);
             } catch (Exception e) {
                 // En caso de que sendPushNotification falle, capturamos el error
                 // y continuamos con el siguiente token para evitar que el bucle se detenga.
                 System.err.println("Error al enviar notificación al dispositivo " + deviceToken.getDeviceId() + ": " + e.getMessage());
-                results.add(new PushNotificationResponse(false, null, "Error al enviar: " + e.getMessage(), 0));
+                results.add(new PushNotificationResponse(false, null, "Error al enviar: " + e.getMessage(), 0, LocalDateTime.now()));
             }
         }
         return results;
