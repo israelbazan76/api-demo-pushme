@@ -11,7 +11,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * Esta clase configura el tema de Vaadin para toda la aplicación.
  * Debe tener la anotación @Theme y extender la interfaz AppShellConfigurator.
  */
-@Theme(value = "app-theme", variant = Lumo.LIGHT)
+@Theme(value = "app-theme-v2", variant = Lumo.LIGHT)
 @Push
 public class VaadinAppConfig implements AppShellConfigurator {
 }

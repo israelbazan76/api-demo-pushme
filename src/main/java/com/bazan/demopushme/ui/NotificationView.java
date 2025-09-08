@@ -19,14 +19,15 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 /**
  * Vista de Vaadin para enviar notificaciones push a todos los dispositivos.
  * Esta clase sirve como la capa de frontend para interactuar con el PushNotificationService.
- * La anotación @Route hace que esta clase sea accesible desde la URL raíz de la aplicación.
  */
-@Route("notifications")
+@Route(value = "", layout = MainLayout.class)
+@PageTitle("Enviar Notificaciones")
 public class NotificationView extends VerticalLayout {
 
     // Se inyecta automáticamente la dependencia del servicio de notificaciones.
@@ -83,7 +84,8 @@ public class NotificationView extends VerticalLayout {
         responseGrid.addColumn(response -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             return response.getTimestamp().format(formatter);
-        }).setHeader("Fecha y Hora").setKey("timestamp");
+        }).setHeader("Fecha y Hora").setKey("timestamp").setSortable(true);
+
         responseGrid.setItems(dataProvider);
         add(responseGrid);
 

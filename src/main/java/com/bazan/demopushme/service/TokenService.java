@@ -5,6 +5,7 @@ import com.bazan.demopushme.model.TokenRegisterRequest;
 import com.bazan.demopushme.repository.DeviceTokenRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,5 +27,13 @@ public class TokenService {
         token.setFirebaseToken(request.getFirebaseToken());
 
         tokenRepository.save(token);
+    }
+
+    /**
+     * Devuelve una lista de todos los dispositivos registrados en la base de datos.
+     * @return Una lista de objetos DeviceToken.
+     */
+    public List<DeviceToken> getAllRegisteredDevices() {
+        return tokenRepository.findAll();
     }
 }
