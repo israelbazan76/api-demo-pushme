@@ -13,8 +13,9 @@ RUN mvn dependency:go-offline
 COPY src ./src
 
 # Compila el proyecto y crea el JAR
-RUN mvn clean package -DskipTests
-
+#RUN mvn clean package -DskipTests
+# -Pproduction: Esta es la parte clave. Activa el perfil de producción de Vaadin. Este perfil es el que le indica a Maven que debe ejecutar el objetivo prepare-frontend y generar los archivos de frontend optimizados que la aplicación de Spring Boot necesita para funcionar en producción.
+RUN mvn clean package -Pproduction -DskipTests
 # --- Segunda etapa: crea una imagen más pequeña solo para ejecutar ---
 FROM eclipse-temurin:17-jre-alpine
 
