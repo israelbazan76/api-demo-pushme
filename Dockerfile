@@ -1,31 +1,38 @@
-# Usa una imagen oficial de Java con Maven incluido
-FROM maven:3.8.6-eclipse-temurin-17-alpine AS builder
+# -----------------------
+# Fase 1: Build con Maven
+# -----------------------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Directorio de trabajo para construir la app
+# Instalar Node.js 18 (compatible con Vaadin 24.x)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+  && apt-get install -y nodejs
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copia el archivo de dependencias primero (aprovecha la cache de Docker)
+# Copiar pom.xml y descargar dependencias primero (cache eficiente)
 COPY pom.xml .
-# Descarga las dependencias
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -B
 
-# Copia todo el código fuente
+# Copiar código fuente
 COPY src ./src
 
-# Compila el proyecto y crea el JAR
-#RUN mvn clean package -DskipTests
-# -Pproduction: Esta es la parte clave. Activa el perfil de producción de Vaadin. Este perfil es el que le indica a Maven que debe ejecutar el objetivo prepare-frontend y generar los archivos de frontend optimizados que la aplicación de Spring Boot necesita para funcionar en producción.
+# Construir la aplicación en modo producción (frontend compilado)
 RUN mvn clean package -Pproduction -DskipTests
-# --- Segunda etapa: crea una imagen más pequeña solo para ejecutar ---
-FROM eclipse-temurin:17-jre-alpine
 
+# -----------------------
+# Fase 2: Imagen final
+# -----------------------
+FROM eclipse-temurin:17-jdk
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copia el JAR desde la etapa de construcción
-COPY --from=builder /app/target/*.jar app.jar
+# Copiar el JAR desde la fase build
+COPY --from=build /app/target/demopushme-0.0.1-SNAPSHOT.jar app.jar
 
-# Expone el puerto (Render lo manejará con la variable PORT)
+# Exponer puerto
 EXPOSE 8080
 
-# Comando para ejecutar la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Comando de arranque
+ENTRYPOINT ["java","-jar","app.jar"]
