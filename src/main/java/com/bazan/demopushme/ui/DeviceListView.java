@@ -56,7 +56,7 @@ public class DeviceListView extends VerticalLayout {
         deviceTokenGrid.addColumn(deviceToken -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             return deviceToken.getRegisteredAt().format(formatter);
-        }).setHeader("Fecha de Registro").setKey("registeredAt").setSortable(true);
+        }).setHeader("Fecha de Registro").setKey("registeredAt").setComparator(DeviceToken::getRegisteredAt).setSortable(true);
 
 
          // Obtener la lista de dispositivos y llenar la grilla
