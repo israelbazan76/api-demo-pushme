@@ -3,8 +3,6 @@ package com.bazan.demopushme.ui;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.bazan.demopushme.entity.DeviceToken;
 import com.bazan.demopushme.service.TokenService;
 import com.vaadin.flow.component.grid.Grid;
@@ -29,7 +27,6 @@ public class DeviceListView extends VerticalLayout {
     /**
      * Constructor que recibe el TokenService inyectado por Spring.
      */
-    @Autowired
     public DeviceListView(TokenService tokenService) {
         this.tokenService = tokenService;
         setupUI();

@@ -9,7 +9,6 @@ import java.util.concurrent.Executors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.bazan.demopushme.dto.PushNotificationResponse;
-import com.bazan.demopushme.repository.DeviceTokenRepository;
 import com.bazan.demopushme.service.FcmRestService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -31,11 +30,8 @@ import com.vaadin.flow.router.Route;
 public class NotificationView extends VerticalLayout {
 
     // Se inyecta automáticamente la dependencia del servicio de notificaciones.
-    private final FcmRestService pushNotificationService;
-
-    // Se inyecta automáticamente la dependencia del repositorio de dispositivos.
-    private final DeviceTokenRepository deviceTokenRepository;
-
+    @Autowired
+    private FcmRestService pushNotificationService;
     // Componentes de la UI
     private final TextField titleField = new TextField("Título de la Notificación");
     private final TextField bodyField = new TextField("Cuerpo del Mensaje");
@@ -50,10 +46,7 @@ public class NotificationView extends VerticalLayout {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     // Constructor que recibe las dependencias inyectadas por Spring.
-    @Autowired
-    public NotificationView(FcmRestService pushNotificationService, DeviceTokenRepository deviceTokenRepository) {
-        this.pushNotificationService = pushNotificationService;
-        this.deviceTokenRepository = deviceTokenRepository;
+    public NotificationView() {
         setupUI();
         setupListeners();
     }

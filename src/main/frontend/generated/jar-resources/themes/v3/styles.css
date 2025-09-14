@@ -1,0 +1,169 @@
+/* 🎯 RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  background-color: #f9f9f9;
+  color: #333;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==============================
+   📱 MENÚ LATERAL
+   ============================== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;            /* Oculto en móvil */
+  width: 250px;
+  height: 100vh;           /* 👈 fuerza ocupar toda la pantalla */
+  background-color: #0077cc; /* 👈 color sólido asegurado */
+  color: white;
+  padding: 1rem;
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+
+.sidebar.active {
+  left: 0; /* visible en móvil */
+}
+
+.sidebar ul {
+  list-style: none;
+  margin-top: 2rem;
+}
+
+.sidebar ul li {
+  margin: 1rem 0;
+}
+
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  display: block;
+  padding: 0.5rem 0;
+}
+
+.sidebar ul li a:hover {
+  text-decoration: underline;
+}
+
+/* Botón menú (hamburger) */
+.menu-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background: #0077cc;
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  border-radius: 5px;
+  z-index: 1100;
+}
+
+/* ==============================
+   📱 CONTENIDO PRINCIPAL
+   ============================== */
+main {
+  flex: 1;
+  padding: 1rem;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+/* ==============================
+   📱 FORMULARIOS
+   ============================== */
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;   /* 👈 espacio entre label y input */
+}
+
+input, select, textarea {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 1rem;    /* 👈 espacio entre campos */
+}
+
+button {
+  background: #0077cc;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #005fa3;
+}
+
+/* ==============================
+   📱 GRILLA
+   ============================== */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* ==============================
+   🖥️ MEDIA QUERIES
+   ============================== */
+
+/* Tablet */
+@media (min-width: 600px) {
+  form {
+    max-width: 500px;
+    margin: auto;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .sidebar {
+    left: 0;
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  main {
+    margin-left: 250px; /* deja espacio al sidebar */
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  form {
+    max-width: 700px;
+  }
+}

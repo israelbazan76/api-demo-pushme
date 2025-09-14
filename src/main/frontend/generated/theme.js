@@ -1,2 +1,2 @@
-import {applyTheme as _applyTheme} from './theme-app-theme-v2.generated.js';
+import {applyTheme as _applyTheme} from './theme-app-theme.generated.js';
 export const applyTheme = _applyTheme;
